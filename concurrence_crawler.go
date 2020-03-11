@@ -15,7 +15,10 @@ import (
 	"time"
 )
 
-var wg  sync.WaitGroup
+var (
+	wg  sync.WaitGroup
+	mu sync.Mutex
+)
 func fetch(url string) string {
 	fmt.Println("Fetch Url", url)
 	client := &http.Client{}
@@ -45,6 +48,7 @@ func parseUrls(url string) {
 	items := rp.FindAllStringSubmatch(body, -1)
 	rContent := regexp.MustCompile("<p>(.*?)</p>")
 	for _, item := range items {
+		mu.Lock()
 		fmt.Println("--------------------------")
 		content := rContent.FindAllStringSubmatch(item[2],-1)
 		if len(content) == 0 {
@@ -54,6 +58,7 @@ func parseUrls(url string) {
 				removeBr(v[1])
 			}
 		}
+		mu.Unlock()
 	}
 	wg.Done()
 }
